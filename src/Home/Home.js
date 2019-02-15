@@ -8,6 +8,7 @@ import P5Wrapper from "react-p5-wrapper";
 import sketchFlat from "../implementations/sketchFlat";
 import sketchPointy from "../implementations/sketchFlat";
 import sketch3D from "../implementations/sketchFlat";
+import * as abstraction from "../abstraction";
 
 class Home extends Component {
   state = {
@@ -21,7 +22,8 @@ class Home extends Component {
     enemies: null,
     finish: null,
     time: 0,
-    gameOverBoolean: false
+    gameOverBoolean: false,
+    hexsize: 25
   };
 
   componentDidMount() {
@@ -37,27 +39,19 @@ class Home extends Component {
   };
 
   startButtonHandler = () => {
-    console.log(this.state.implementation);
-    this.refreshMap();
-    this.setState({
-      start: true,
-      gameOverBoolean: false,
-      mapsize: 2,
-      player: { cords: { x: 0, y: 0, z: 0 } },
-      timeInterval: 1000 / (this.state.difficulty / 10),
-      time: 0
-    });
-  };
-
-  generateEnemies = n => {
-    let enemies = [];
-    for (let radius = 1; radius <= n; radius++) {
-      for (let i = 0; i < radius; i++) {
-        let cords = this.generateRandomHex(radius);
-        enemies.push({ cords: { x: cords.x, y: cords.y, z: cords.z } });
+    this.setState(
+      {
+        gameOverBoolean: false,
+        mapsize: 2,
+        player: { cords: abstraction.createVector(0, 0, 0) },
+        timeInterval: 1000 / (this.state.difficulty / 10),
+        time: 0,
+        hexsize: 25
+      },
+      () => {
+        this.refreshMap();
       }
-    }
-    return enemies;
+    );
   };
 
   refreshMap = () => {
@@ -73,79 +67,151 @@ class Home extends Component {
         }
       }
     }
-    let newEnemies = this.generateEnemies(this.state.mapsize - 1);
+    let newEnemies = abstraction.generateEnemies(this.state.mapsize - 1);
     let newFinish = null;
     let finishInRed = true;
     while (finishInRed) {
-      newFinish = { cords: this.generateRandomHex(this.state.mapsize - 1) };
+      newFinish = {
+        cords: abstraction.generateRandomHex(this.state.mapsize - 1)
+      };
       finishInRed = false;
       for (let index = 0; index < newEnemies.length; index++) {
         const enemy = newEnemies[index];
-        if (this.dist(enemy.cords, newFinish.cords) === 0) {
+        if (abstraction.dist(enemy.cords, newFinish.cords) === 0) {
           finishInRed = true;
         }
       }
     }
-    if (newEnemies && newFinish && newMap) {
-      this.setState({
-        enemies: newEnemies,
-        finish: newFinish,
-        map: newMap
-      });
-    }
-  };
-
-  dist = (p1, p2) => {
-    return Math.sqrt(
-      Math.pow(p2.x - p1.x, 2) +
-        Math.pow(p2.y - p1.y, 2) +
-        Math.pow(p2.z - p1.z, 2)
-    );
-  };
-
-  generateRandomHex = n => {
-    let x = 0;
-    let y = 0;
-    let z = 0;
-    let a = Math.floor(Math.random * 6 + 1);
-    let b = Math.floor(Math.random * n + 1);
-    if (a === 1) {
-      x = -n;
-      y = b;
-      z = -y - x;
-    } else if (a === 2) {
-      x = n;
-      y = -b;
-      z = -y - x;
-    }
-    if (a === 3) {
-      y = -n;
-      x = b;
-      z = -y - x;
-    } else if (a === 4) {
-      y = n;
-      x = -b;
-      z = -y - x;
-    }
-    if (a === 5) {
-      z = -n;
-      y = b;
-      x = -y - z;
-    } else if (a === 6) {
-      z = n;
-      y = -b;
-      x = -y - z;
-    }
-    return { x: x, y: y, z: z };
+    this.setState({
+      map: newMap,
+      enemies: newEnemies,
+      finish: newFinish,
+      start: true
+    });
   };
 
   move = event => {
     if (this.state.start) {
+      let newCords = abstraction.createVector(
+        this.state.player.cords.x,
+        this.state.player.cords.y,
+        this.state.player.cords.z
+      );
+      if (event.keyCode === 81) {
+        newCords.x -= 1;
+        newCords.y += 1;
+      } else if (event.keyCode === 87) {
+        newCords.z -= 1;
+        newCords.y += 1;
+      } else if (event.keyCode === 69) {
+        newCords.x += 1;
+        newCords.z -= 1;
+      } else if (event.keyCode === 65) {
+        newCords.x -= 1;
+        newCords.z += 1;
+      } else if (event.keyCode === 83) {
+        newCords.z += 1;
+        newCords.y -= 1;
+      } else if (event.keyCode === 68) {
+        newCords.x += 1;
+        newCords.y -= 1;
+      }
+      if (
+        newCords.x < this.state.mapsize &&
+        newCords.y < this.state.mapsize &&
+        newCords.z < this.state.mapsize &&
+        newCords.x > -this.state.mapsize &&
+        newCords.y > -this.state.mapsize &&
+        newCords.z > -this.state.mapsize
+      ) {
+        this.setState({
+          player: {
+            cords: newCords
+          }
+        });
+        for (
+          let enemyIndex = 0;
+          enemyIndex < this.state.enemies.length;
+          enemyIndex++
+        ) {
+          let enemy = this.state.enemies[enemyIndex];
+          if (abstraction.dist(enemy.cords, this.state.player.cords) === 0) {
+            this.gameOver();
+            return;
+          }
+        }
+        if (
+          abstraction.dist(this.state.player.cords, this.state.finish.cords) ===
+          0
+        ) {
+          this.levelUp();
+          return;
+        }
+      }
     }
   };
 
   gameOver = () => {
     this.setState({ start: false });
+  };
+
+  levelUp = () => {
+    this.setState(
+      {
+        mapsize: this.state.mapsize + 1,
+        player: { cords: abstraction.createVector(0, 0, 0) },
+        time: 0
+      },
+      () => {
+        this.refreshMap();
+        let h = 0;
+        let w = 0;
+        if (this.state.implementation === "flat") {
+          h = this.state.hexsize * Math.sqrt(3);
+          w = this.state.hexsize * 2;
+        } else if (this.state.implementation === "pointy") {
+          w = this.state.hexsiz * Math.sqrt(3);
+          h = this.state.hexsiz * 2;
+        }
+        let height = document.getElementById("root").clientHeight;
+        let width = document.getElementById("root").clientWidth;
+        if (
+          (this.state.mapsize - 1) * h > height / 2 ||
+          (this.state.mapsize - 1) * (3 / 4) * w > width / 2
+        ) {
+          this.setState({ hexsize: this.state.hexsize * 0.9 });
+        }
+      }
+    );
+  };
+
+  timer = () => {
+    this.intervalHandle = setInterval(this.tick, this.timeInterval);
+    let time = this.state.minutes;
+    this.secondsRemaining = time * 60;
+  };
+
+  tick = () => {
+    var min = Math.floor(this.secondsRemaining / 60);
+    var sec = this.secondsRemaining - min * 60;
+    this.setState({
+      minutes: min,
+      seconds: sec
+    });
+    if (sec < 10) {
+      this.setState({
+        seconds: "0" + this.state.seconds
+      });
+    }
+    if (min < 10) {
+      this.setState({
+        value: "0" + min
+      });
+    }
+    if ((min === 0) & (sec === 0)) {
+      clearInterval(this.intervalHandle);
+    }
+    this.secondsRemaining--;
   };
 
   render() {
@@ -166,6 +232,7 @@ class Home extends Component {
         finish={this.state.finish}
         time={this.state.time}
         gameOver={this.gameOver}
+        hexsize={this.state.hexsize}
       />
     ) : (
       <div className={classes.Home}>

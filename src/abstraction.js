@@ -1,4 +1,4 @@
-export default (problem, hexagon, mapsize) => {
+export const singleHexagonGreedySearch = (problem, hexagon, mapsize) => {
   if (dist(problem.cords, hexagon.cords) === 0) {
     return hexagon;
   }
@@ -40,11 +40,11 @@ export default (problem, hexagon, mapsize) => {
   return null;
 };
 
-let createVector = (x, y, z) => {
+export const createVector = (x, y, z) => {
   return { x: x, y: y, z: z };
 };
 
-let dist = (p1, p2) => {
+export const dist = (p1, p2) => {
   return Math.sqrt(
     Math.pow(p2.x - p1.x, 2) +
       Math.pow(p2.y - p1.y, 2) +
@@ -52,6 +52,53 @@ let dist = (p1, p2) => {
   );
 };
 
-let add = (p1, p2) => {
+export const generateEnemies = n => {
+  let enemies = [];
+  for (let radius = 1; radius <= n; radius++) {
+    for (let i = 0; i < radius; i++) {
+      let cords = generateRandomHex(radius);
+      enemies.push({ cords: createVector(cords.x, cords.y, cords.z) });
+    }
+  }
+  return enemies;
+};
+
+export const add = (p1, p2) => {
   return { x: p1.x + p2.x, y: p1.y + p2.y, z: p1.z + p2.z };
+};
+
+export const generateRandomHex = n => {
+  let x = 0;
+  let y = 0;
+  let z = 0;
+  let a = Math.floor(Math.random() * 6 + 1);
+  let b = Math.floor(Math.random() * n + 1);
+  if (a === 1) {
+    x = -n;
+    y = b;
+    z = -y - x;
+  } else if (a === 2) {
+    x = n;
+    y = -b;
+    z = -y - x;
+  }
+  if (a === 3) {
+    y = -n;
+    x = b;
+    z = -y - x;
+  } else if (a === 4) {
+    y = n;
+    x = -b;
+    z = -y - x;
+  }
+  if (a === 5) {
+    z = -n;
+    y = b;
+    x = -y - z;
+  } else if (a === 6) {
+    z = n;
+    y = -b;
+    x = -y - z;
+  }
+  return createVector(x, y, z);
 };
