@@ -9,12 +9,12 @@ export default function sketch(p) {
 
   let angle = 0;
   p.setup = function() {
-    p.createCanvas(p.windowWidth, p.windowHeight - 4, p.WEBGL);
+    p.createCanvas(p.windowWidth, p.windowHeight - 7, p.WEBGL);
   };
 
   p.draw = function() {
     p.background(0);
-    p.camera(0, 0, p.height / 2 / p.tan(p.PI / 6), -100, -100, 0, 0, 1, 0);
+    p.camera(0, 0, p.height / 2 / p.tan(p.PI / 6), mouseX, mouseY, 0, 0, 1, 0);
     p.ambientLight(255);
 
     p.push();

@@ -24,7 +24,9 @@ class Home extends Component {
     gameOverBoolean: false,
     hexsize: 25,
     mouseX: 0,
-    mouseY: 0
+    mouseY: 0,
+    xModifier: 0,
+    yModifier: 0
   };
 
   componentDidMount() {
@@ -224,15 +226,50 @@ class Home extends Component {
 
   mouseMove = event => {
     console.log("MOUSE MOVE", event.screenX, event.screenY);
-    if (event.screenX === 0) {
-      console.log("0");
+    let sensitivity = 50;
+    if (event.screenX <= 0) {
       this.setState({
-        mouseX: this.state.mouseX - 0.00001,
-        mouseY: event.mouseY
+        mouseX: this.state.mouseX - sensitivity,
+        xModifier: this.state.xModifier - sensitivity
       });
-    } else {
-      console.log(event.screenX - this.state.mouseX);
-      this.setState({ mouseX: event.screenX, mouseY: event.screenY });
+    }
+    if (event.screenY <= 0) {
+      this.setState({
+        mouseY: this.state.mouseY - sensitivity,
+        yModifier: this.state.yModifier - sensitivity
+      });
+    }
+    if (event.screenX >= document.getElementById("root").clientWidth - 5) {
+      this.setState({
+        mouseX: this.state.mouseX + sensitivity,
+        xModifier: this.state.xModifier + sensitivity
+      });
+    }
+    if (event.screenY >= document.getElementById("root").clientHeight - 5) {
+      this.setState({
+        mouseY: this.state.mouseY + sensitivity,
+        yModifier: this.state.yModifier + sensitivity
+      });
+    }
+    if (event.screenX + this.state.xModifier > this.state.mouseX) {
+      this.setState({
+        mouseX: this.state.mouseX + sensitivity
+      });
+    }
+    if (event.screenY + this.state.yModifier > this.state.mouseY) {
+      this.setState({
+        mouseY: this.state.mouseY + sensitivity
+      });
+    }
+    if (event.screenX + this.state.xModifier < this.state.mouseX) {
+      this.setState({
+        mouseX: this.state.mouseX - sensitivity
+      });
+    }
+    if (event.screenY + this.state.yModifier < this.state.mouseY) {
+      this.setState({
+        mouseY: this.state.mouseY - sensitivity
+      });
     }
   };
 
@@ -289,7 +326,7 @@ class Home extends Component {
 
   render() {
     return this.state.start ? (
-      <div onMouseMove={this.mouseMove} draggable="true">
+      <div onMouseMove={this.mouseMove}>
         <P5Wrapper
           sketch={
             this.state.implementation === "flat"
