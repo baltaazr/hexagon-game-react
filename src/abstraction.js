@@ -1,3 +1,4 @@
+//SEARCH
 export const singleHexagonGreedySearch = (problem, hexagon, mapsize) => {
   if (dist(problem.cords, hexagon.cords) === 0) {
     return hexagon;
@@ -40,6 +41,7 @@ export const singleHexagonGreedySearch = (problem, hexagon, mapsize) => {
   return null;
 };
 
+//VECTORS
 export const createVector = (x, y, z) => {
   return { x: x, y: y, z: z };
 };
@@ -52,6 +54,11 @@ export const dist = (p1, p2) => {
   );
 };
 
+export const add = (p1, p2) => {
+  return { x: p1.x + p2.x, y: p1.y + p2.y, z: p1.z + p2.z };
+};
+
+//MAP CREATION
 export const generateEnemies = n => {
   let enemies = [];
   for (let radius = 1; radius <= n; radius++) {
@@ -61,10 +68,6 @@ export const generateEnemies = n => {
     }
   }
   return enemies;
-};
-
-export const add = (p1, p2) => {
-  return { x: p1.x + p2.x, y: p1.y + p2.y, z: p1.z + p2.z };
 };
 
 export const generateRandomHex = n => {
@@ -101,4 +104,20 @@ export const generateRandomHex = n => {
     x = -y - z;
   }
   return createVector(x, y, z);
+};
+
+export const generateNewMap = mapsize => {
+  let newMap = [];
+  for (let n = 0; n < mapsize; n++) {
+    for (let x = -n; x <= n; x++) {
+      for (let y = -n; y <= n; y++) {
+        for (let z = -n; z <= n; z++) {
+          if (x + y + z === 0) {
+            newMap.push({ cords: { x: x, y: y, z: z } });
+          }
+        }
+      }
+    }
+  }
+  return newMap;
 };

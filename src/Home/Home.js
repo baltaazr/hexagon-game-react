@@ -6,8 +6,8 @@ import Dropdown from "react-bootstrap/Dropdown";
 import ButtonToolbar from "react-bootstrap/ButtonToolbar";
 import P5Wrapper from "react-p5-wrapper";
 import sketchFlat from "../implementations/sketchFlat";
-import sketchPointy from "../implementations/sketchFlat";
-import sketch3D from "../implementations/sketchFlat";
+import sketchPointy from "../implementations/sketchPointy";
+//import sketch3D from "../implementations/sketch3D";
 import * as abstraction from "../abstraction";
 
 class Home extends Component {
@@ -17,7 +17,6 @@ class Home extends Component {
     difficulty: 2,
     mapsize: 0,
     map: [],
-    timeInterval: 5000,
     player: null,
     enemies: null,
     finish: null,
@@ -30,43 +29,36 @@ class Home extends Component {
     document.addEventListener("keydown", this.move, false);
   }
 
+  //HANDLERS
+
   changeImplementationHandler = newType => {
     this.setState({ implementation: newType });
   };
 
   difficultySliderHandler = event => {
-    this.setState({ difficulty: event.target.value });
+    this.setState({ difficulty: parseInt(event.target.value) });
   };
 
-  startButtonHandler = () => {
+  //GAME UPDATE
+
+  startGame = () => {
     this.setState(
       {
         gameOverBoolean: false,
         mapsize: 2,
         player: { cords: abstraction.createVector(0, 0, 0) },
-        timeInterval: 1000 / (this.state.difficulty / 10),
         time: 0,
         hexsize: 25
       },
       () => {
         this.refreshMap();
+        this.timer();
       }
     );
   };
 
   refreshMap = () => {
-    let newMap = [];
-    for (let n = 0; n < this.state.mapsize; n++) {
-      for (let x = -n; x <= n; x++) {
-        for (let y = -n; y <= n; y++) {
-          for (let z = -n; z <= n; z++) {
-            if (x + y + z === 0) {
-              newMap.push({ cords: { x: x, y: y, z: z } });
-            }
-          }
-        }
-      }
-    }
+    let newMap = abstraction.generateNewMap(this.state.mapsize);
     let newEnemies = abstraction.generateEnemies(this.state.mapsize - 1);
     let newFinish = null;
     let finishInRed = true;
@@ -90,6 +82,56 @@ class Home extends Component {
     });
   };
 
+  levelUp = () => {
+    this.setState(
+      {
+        mapsize: this.state.mapsize + 1,
+        player: { cords: abstraction.createVector(0, 0, 0) },
+        time: 0
+      },
+      () => {
+        this.refreshMap();
+        let newHexsize = this.state.hexsize;
+        let h = 0;
+        let w = 0;
+        let height = document.getElementById("root").clientHeight;
+        let width = document.getElementById("root").clientWidth;
+        if (this.state.implementation === "flat") {
+          h = this.state.hexsize * Math.sqrt(3);
+          w = this.state.hexsize * 2;
+          while (
+            (this.state.mapsize - 1) * h > height / 2 ||
+            (this.state.mapsize - 1) * (3 / 4) * w > width / 2
+          ) {
+            newHexsize *= 0.9;
+            h = newHexsize * Math.sqrt(3);
+            w = newHexsize * 2;
+          }
+        } else if (this.state.implementation === "pointy") {
+          w = this.state.hexsize * Math.sqrt(3);
+          h = this.state.hexsize * 2;
+          while (
+            (this.state.mapsize - 1) * (3 / 4) * h > height / 2 ||
+            (this.state.mapsize - 1) * w > width / 2
+          ) {
+            newHexsize *= 0.9;
+            w = newHexsize * Math.sqrt(3);
+            h = newHexsize * 2;
+          }
+        }
+        if (newHexsize !== this.state.hexsize) {
+          this.setState({ hexsize: newHexsize });
+        }
+      }
+    );
+  };
+
+  gameOver = () => {
+    this.setState({ start: false });
+  };
+
+  //CONTROLS
+
   move = event => {
     if (this.state.start) {
       let newCords = abstraction.createVector(
@@ -97,24 +139,46 @@ class Home extends Component {
         this.state.player.cords.y,
         this.state.player.cords.z
       );
-      if (event.keyCode === 81) {
-        newCords.x -= 1;
-        newCords.y += 1;
-      } else if (event.keyCode === 87) {
-        newCords.z -= 1;
-        newCords.y += 1;
-      } else if (event.keyCode === 69) {
-        newCords.x += 1;
-        newCords.z -= 1;
-      } else if (event.keyCode === 65) {
-        newCords.x -= 1;
-        newCords.z += 1;
-      } else if (event.keyCode === 83) {
-        newCords.z += 1;
-        newCords.y -= 1;
-      } else if (event.keyCode === 68) {
-        newCords.x += 1;
-        newCords.y -= 1;
+      if (this.state.implementation === "flat") {
+        if (event.keyCode === 81) {
+          newCords.x -= 1;
+          newCords.y += 1;
+        } else if (event.keyCode === 87) {
+          newCords.z -= 1;
+          newCords.y += 1;
+        } else if (event.keyCode === 69) {
+          newCords.x += 1;
+          newCords.z -= 1;
+        } else if (event.keyCode === 65) {
+          newCords.x -= 1;
+          newCords.z += 1;
+        } else if (event.keyCode === 83) {
+          newCords.z += 1;
+          newCords.y -= 1;
+        } else if (event.keyCode === 68) {
+          newCords.x += 1;
+          newCords.y -= 1;
+        }
+      } else if (this.state.implementation === "pointy") {
+        if (event.keyCode === 87) {
+          newCords.z -= 1;
+          newCords.y += 1;
+        } else if (event.keyCode === 69) {
+          newCords.x += 1;
+          newCords.z -= 1;
+        } else if (event.keyCode === 65) {
+          newCords.x -= 1;
+          newCords.y += 1;
+        } else if (event.keyCode === 68) {
+          newCords.x += 1;
+          newCords.y -= 1;
+        } else if (event.keyCode === 90) {
+          newCords.x -= 1;
+          newCords.z += 1;
+        } else if (event.keyCode === 88) {
+          newCords.z += 1;
+          newCords.y -= 1;
+        }
       }
       if (
         newCords.x < this.state.mapsize &&
@@ -148,70 +212,60 @@ class Home extends Component {
           return;
         }
       }
+    } else if (event.keyCode === 13) {
+      this.startGame();
     }
   };
 
-  gameOver = () => {
-    this.setState({ start: false });
-  };
+  //TIMER
 
-  levelUp = () => {
-    this.setState(
-      {
-        mapsize: this.state.mapsize + 1,
-        player: { cords: abstraction.createVector(0, 0, 0) },
-        time: 0
-      },
-      () => {
-        this.refreshMap();
-        let h = 0;
-        let w = 0;
-        if (this.state.implementation === "flat") {
-          h = this.state.hexsize * Math.sqrt(3);
-          w = this.state.hexsize * 2;
-        } else if (this.state.implementation === "pointy") {
-          w = this.state.hexsiz * Math.sqrt(3);
-          h = this.state.hexsiz * 2;
-        }
-        let height = document.getElementById("root").clientHeight;
-        let width = document.getElementById("root").clientWidth;
-        if (
-          (this.state.mapsize - 1) * h > height / 2 ||
-          (this.state.mapsize - 1) * (3 / 4) * w > width / 2
-        ) {
-          this.setState({ hexsize: this.state.hexsize * 0.9 });
-        }
-      }
+  timer = () => {
+    this.intervalHandle = setInterval(
+      this.tick,
+      10 / (this.state.difficulty / 10)
     );
   };
 
-  timer = () => {
-    this.intervalHandle = setInterval(this.tick, this.timeInterval);
-    let time = this.state.minutes;
-    this.secondsRemaining = time * 60;
-  };
-
   tick = () => {
-    var min = Math.floor(this.secondsRemaining / 60);
-    var sec = this.secondsRemaining - min * 60;
-    this.setState({
-      minutes: min,
-      seconds: sec
-    });
-    if (sec < 10) {
-      this.setState({
-        seconds: "0" + this.state.seconds
-      });
-    }
-    if (min < 10) {
-      this.setState({
-        value: "0" + min
-      });
-    }
-    if ((min === 0) & (sec === 0)) {
+    if (this.state.start) {
+      this.setState(
+        {
+          time: this.state.time + 1
+        },
+        () => {
+          if (this.state.time === 100) {
+            clearInterval(this.intervalHandle);
+            let newEnemies = [];
+            for (
+              let enemyIndex = 0;
+              enemyIndex < this.state.enemies.length;
+              enemyIndex++
+            ) {
+              let newEnemy = { ...this.state.enemies[enemyIndex] };
+              newEnemy.cords = abstraction.singleHexagonGreedySearch(
+                this.state.player,
+                newEnemy,
+                this.state.mapsize
+              ).cords;
+              if (
+                abstraction.dist(newEnemy.cords, this.state.player.cords) === 0
+              ) {
+                this.gameOver();
+                return;
+              } else {
+                newEnemies.push(newEnemy);
+              }
+              if (enemyIndex === this.state.enemies.length - 1) {
+                this.setState({ enemies: newEnemies, time: 0 });
+                this.timer();
+              }
+            }
+          }
+        }
+      );
+    } else {
       clearInterval(this.intervalHandle);
     }
-    this.secondsRemaining--;
   };
 
   render() {
@@ -222,11 +276,11 @@ class Home extends Component {
             ? sketchFlat
             : this.state.implementation === "pointy"
             ? sketchPointy
-            : sketch3D
+            : null
+          // : sketch3D
         }
         mapsize={this.state.mapsize}
         map={this.state.map}
-        timeInterval={this.state.timeInterval}
         player={this.state.player}
         enemies={this.state.enemies}
         finish={this.state.finish}
@@ -237,7 +291,7 @@ class Home extends Component {
     ) : (
       <div className={classes.Home}>
         <ButtonToolbar>
-          <Button onClick={this.startButtonHandler}>
+          <Button onClick={this.startGame}>
             Start: {this.state.implementation.toUpperCase()}
           </Button>
           <Dropdown className={"ml-1"}>
