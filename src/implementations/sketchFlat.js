@@ -27,25 +27,18 @@ export default function sketch(p) {
       p.push();
       let center = p.createVector(p.width / 2, p.height / 2);
       p.translate(center.x, center.y);
-      let oldPlayerCords = offset_to_absolute(
-        cube_to_offset(
-          p.createVector(player.cords.x, player.cords.y, player.cords.z)
-        )
+      drawHexagon(
+        player.cords.x,
+        player.cords.y,
+        player.cords.z,
+        p.createVector(255, 255, 255)
       );
-      polygon(oldPlayerCords.x, oldPlayerCords.y, hexsize, 6);
-      p.push();
-      p.fill(0);
-      let newPlayerCords = offset_to_absolute(
-        cube_to_offset(
-          p.createVector(
-            props.player.cords.x,
-            props.player.cords.y,
-            props.player.cords.z
-          )
-        )
+      drawHexagon(
+        props.player.cords.x,
+        props.player.cords.y,
+        props.player.cords.z,
+        p.createVector(0, 0, 0)
       );
-      polygon(newPlayerCords.x, newPlayerCords.y, hexsize, 6);
-      p.pop();
       p.pop();
       player = props.player;
       return;
@@ -56,38 +49,32 @@ export default function sketch(p) {
       p.translate(center.x, center.y);
       for (let enemyIndex = 0; enemyIndex < enemies.length; enemyIndex++) {
         let enemy = enemies[enemyIndex];
-        let oldEnemyCords = offset_to_absolute(
-          cube_to_offset(
-            p.createVector(enemy.cords.x, enemy.cords.y, enemy.cords.z)
-          )
+        drawHexagon(
+          enemy.cords.x,
+          enemy.cords.y,
+          enemy.cords.z,
+          p.createVector(255, 255, 255)
         );
-        polygon(oldEnemyCords.x, oldEnemyCords.y, hexsize, 6);
       }
-      p.push();
-      p.fill(0, 255, 0);
-      let finishCords = offset_to_absolute(
-        cube_to_offset(
-          p.createVector(finish.cords.x, finish.cords.y, finish.cords.z)
-        )
+      drawHexagon(
+        finish.cords.x,
+        finish.cords.y,
+        finish.cords.z,
+        p.createVector(0, 255, 0)
       );
-      polygon(finishCords.x, finishCords.y, hexsize, 6);
-      p.pop();
-      p.push();
-      p.fill(255, 0, 0);
       for (
         let enemyIndex = 0;
         enemyIndex < props.enemies.length;
         enemyIndex++
       ) {
         let enemy = props.enemies[enemyIndex];
-        let newEnemyCords = offset_to_absolute(
-          cube_to_offset(
-            p.createVector(enemy.cords.x, enemy.cords.y, enemy.cords.z)
-          )
+        drawHexagon(
+          enemy.cords.x,
+          enemy.cords.y,
+          enemy.cords.z,
+          p.createVector(255, 0, 0)
         );
-        polygon(newEnemyCords.x, newEnemyCords.y, hexsize, 6);
       }
-      p.pop();
       p.pop();
       enemies = props.enemies;
       return;
@@ -122,43 +109,34 @@ export default function sketch(p) {
     p.translate(center.x, center.y);
     for (let n = 0; n < map.length; n++) {
       const mapHex = map[n];
-      let cords = offset_to_absolute(
-        cube_to_offset(
-          p.createVector(mapHex.cords.x, mapHex.cords.y, mapHex.cords.z)
-        )
+      drawHexagon(
+        mapHex.cords.x,
+        mapHex.cords.y,
+        mapHex.cords.z,
+        p.createVector(255, 255, 255)
       );
-      polygon(cords.x, cords.y, hexsize, 6);
     }
-    p.push();
-    p.fill(0, 255, 0);
-    let finishCords = offset_to_absolute(
-      cube_to_offset(
-        p.createVector(finish.cords.x, finish.cords.y, finish.cords.z)
-      )
+    drawHexagon(
+      finish.cords.x,
+      finish.cords.y,
+      finish.cords.z,
+      p.createVector(0, 255, 0)
     );
-    polygon(finishCords.x, finishCords.y, hexsize, 6);
-    p.pop();
-    p.push();
-    p.fill(0);
-    let playerCords = offset_to_absolute(
-      cube_to_offset(
-        p.createVector(player.cords.x, player.cords.y, player.cords.z)
-      )
+    drawHexagon(
+      player.cords.x,
+      player.cords.y,
+      player.cords.z,
+      p.createVector(0, 0, 0)
     );
-    polygon(playerCords.x, playerCords.y, hexsize, 6);
-    p.pop();
-    p.push();
-    p.fill(255, 0, 0);
     for (let enemyIndex = 0; enemyIndex < enemies.length; enemyIndex++) {
       const enemy = enemies[enemyIndex];
-      let cords = offset_to_absolute(
-        cube_to_offset(
-          p.createVector(enemy.cords.x, enemy.cords.y, enemy.cords.z)
-        )
+      drawHexagon(
+        enemy.cords.x,
+        enemy.cords.y,
+        enemy.cords.z,
+        p.createVector(255, 0, 0)
       );
-      polygon(cords.x, cords.y, hexsize, 6);
     }
-    p.pop();
     p.pop();
   };
 
@@ -197,5 +175,15 @@ export default function sketch(p) {
       p.vertex(sx, sy);
     }
     p.endShape(p.CLOSE);
+  };
+
+  let drawHexagon = (x, y, z, color) => {
+    p.push();
+    p.fill(color.x, color.y, color.z);
+    let absoluteCords = offset_to_absolute(
+      cube_to_offset(p.createVector(x, y, z))
+    );
+    polygon(absoluteCords.x, absoluteCords.y, hexsize, 6);
+    p.pop();
   };
 }

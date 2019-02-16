@@ -7,7 +7,7 @@ import ButtonToolbar from "react-bootstrap/ButtonToolbar";
 import P5Wrapper from "react-p5-wrapper";
 import sketchFlat from "../implementations/sketchFlat";
 import sketchPointy from "../implementations/sketchPointy";
-//import sketch3D from "../implementations/sketch3D";
+import sketch3D from "../implementations/sketch3D";
 import * as abstraction from "../abstraction";
 
 class Home extends Component {
@@ -22,7 +22,9 @@ class Home extends Component {
     finish: null,
     time: 0,
     gameOverBoolean: false,
-    hexsize: 25
+    hexsize: 25,
+    mouseX: 0,
+    mouseY: 0
   };
 
   componentDidMount() {
@@ -52,7 +54,7 @@ class Home extends Component {
       },
       () => {
         this.refreshMap();
-        this.timer();
+        // this.timer();
       }
     );
   };
@@ -139,7 +141,10 @@ class Home extends Component {
         this.state.player.cords.y,
         this.state.player.cords.z
       );
-      if (this.state.implementation === "flat") {
+      if (
+        this.state.implementation === "flat" ||
+        this.state.implementation === "3d"
+      ) {
         if (event.keyCode === 81) {
           newCords.x -= 1;
           newCords.y += 1;
@@ -217,6 +222,20 @@ class Home extends Component {
     }
   };
 
+  mouseMove = event => {
+    console.log("MOUSE MOVE", event.screenX, event.screenY);
+    if (event.screenX === 0) {
+      console.log("0");
+      this.setState({
+        mouseX: this.state.mouseX - 0.00001,
+        mouseY: event.mouseY
+      });
+    } else {
+      console.log(event.screenX - this.state.mouseX);
+      this.setState({ mouseX: event.screenX, mouseY: event.screenY });
+    }
+  };
+
   //TIMER
 
   timer = () => {
@@ -270,24 +289,26 @@ class Home extends Component {
 
   render() {
     return this.state.start ? (
-      <P5Wrapper
-        sketch={
-          this.state.implementation === "flat"
-            ? sketchFlat
-            : this.state.implementation === "pointy"
-            ? sketchPointy
-            : null
-          // : sketch3D
-        }
-        mapsize={this.state.mapsize}
-        map={this.state.map}
-        player={this.state.player}
-        enemies={this.state.enemies}
-        finish={this.state.finish}
-        time={this.state.time}
-        gameOver={this.gameOver}
-        hexsize={this.state.hexsize}
-      />
+      <div onMouseMove={this.mouseMove} draggable="true">
+        <P5Wrapper
+          sketch={
+            this.state.implementation === "flat"
+              ? sketchFlat
+              : this.state.implementation === "pointy"
+              ? sketchPointy
+              : sketch3D
+          }
+          mapsize={this.state.mapsize}
+          map={this.state.map}
+          player={this.state.player}
+          enemies={this.state.enemies}
+          finish={this.state.finish}
+          time={this.state.time}
+          hexsize={this.state.hexsize}
+          mouseX={this.state.mouseX}
+          mouseY={this.state.mouseY}
+        />
+      </div>
     ) : (
       <div className={classes.Home}>
         <ButtonToolbar>
