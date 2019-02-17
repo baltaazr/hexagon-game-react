@@ -10,7 +10,8 @@
     "react-dom": "^16.8.1",
     "react-keydown": "^1.9.7",
     "react-p5-wrapper": "0.0.4",
-    "react-scripts": "2.1.5"
+    "react-scripts": "2.1.5",
+    "three": "^0.101.1"
   },
   "scripts": {
     "start": "react-scripts start",

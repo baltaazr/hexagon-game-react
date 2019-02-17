@@ -23,13 +23,10 @@ class Home extends Component {
     time: 0,
     gameOverBoolean: false,
     hexsize: 25,
-    mouseX: 0,
-    mouseY: 0,
-    xModifier: 0,
-    yModifier: 0
+    direction: { x: 0, y: 0, z: 0 }
   };
 
-  componentDidMount() {
+  componentDidUpdate() {
     document.addEventListener("keydown", this.move, false);
   }
 
@@ -46,6 +43,7 @@ class Home extends Component {
   //GAME UPDATE
 
   startGame = () => {
+    console.log("START", this.state.implementation);
     this.setState(
       {
         gameOverBoolean: false,
@@ -56,7 +54,7 @@ class Home extends Component {
       },
       () => {
         this.refreshMap();
-        // this.timer();
+        //this.timer();
       }
     );
   };
@@ -138,85 +136,108 @@ class Home extends Component {
 
   move = event => {
     if (this.state.start) {
-      let newCords = abstraction.createVector(
-        this.state.player.cords.x,
-        this.state.player.cords.y,
-        this.state.player.cords.z
-      );
-      if (
-        this.state.implementation === "flat" ||
-        this.state.implementation === "3d"
-      ) {
+      if (this.state.implementation === "3d") {
+        let newDirection = { x: 0, y: 0, z: 0 };
         if (event.keyCode === 81) {
-          newCords.x -= 1;
-          newCords.y += 1;
+          newDirection.x -= 1;
+          newDirection.z += 1;
         } else if (event.keyCode === 87) {
-          newCords.z -= 1;
-          newCords.y += 1;
+          newDirection.z += 1;
+          newDirection.y -= 1;
         } else if (event.keyCode === 69) {
-          newCords.x += 1;
-          newCords.z -= 1;
+          newDirection.x += 1;
+          newDirection.y -= 1;
         } else if (event.keyCode === 65) {
-          newCords.x -= 1;
-          newCords.z += 1;
+          newDirection.x -= 1;
+          newDirection.y += 1;
         } else if (event.keyCode === 83) {
-          newCords.z += 1;
-          newCords.y -= 1;
+          newDirection.z -= 1;
+          newDirection.y += 1;
         } else if (event.keyCode === 68) {
-          newCords.x += 1;
-          newCords.y -= 1;
+          newDirection.x += 1;
+          newDirection.z -= 1;
         }
-      } else if (this.state.implementation === "pointy") {
-        if (event.keyCode === 87) {
-          newCords.z -= 1;
-          newCords.y += 1;
-        } else if (event.keyCode === 69) {
-          newCords.x += 1;
-          newCords.z -= 1;
-        } else if (event.keyCode === 65) {
-          newCords.x -= 1;
-          newCords.y += 1;
-        } else if (event.keyCode === 68) {
-          newCords.x += 1;
-          newCords.y -= 1;
-        } else if (event.keyCode === 90) {
-          newCords.x -= 1;
-          newCords.z += 1;
-        } else if (event.keyCode === 88) {
-          newCords.z += 1;
-          newCords.y -= 1;
-        }
-      }
-      if (
-        newCords.x < this.state.mapsize &&
-        newCords.y < this.state.mapsize &&
-        newCords.z < this.state.mapsize &&
-        newCords.x > -this.state.mapsize &&
-        newCords.y > -this.state.mapsize &&
-        newCords.z > -this.state.mapsize
-      ) {
-        this.setState({
-          player: {
-            cords: newCords
+        this.setState({ direction: newDirection });
+      } else {
+        let newCords = abstraction.createVector(
+          this.state.player.cords.x,
+          this.state.player.cords.y,
+          this.state.player.cords.z
+        );
+        if (this.state.implementation === "flat") {
+          if (event.keyCode === 81) {
+            newCords.x -= 1;
+            newCords.y += 1;
+          } else if (event.keyCode === 87) {
+            newCords.z -= 1;
+            newCords.y += 1;
+          } else if (event.keyCode === 69) {
+            newCords.x += 1;
+            newCords.z -= 1;
+          } else if (event.keyCode === 65) {
+            newCords.x -= 1;
+            newCords.z += 1;
+          } else if (event.keyCode === 83) {
+            newCords.z += 1;
+            newCords.y -= 1;
+          } else if (event.keyCode === 68) {
+            newCords.x += 1;
+            newCords.y -= 1;
           }
-        });
-        for (
-          let enemyIndex = 0;
-          enemyIndex < this.state.enemies.length;
-          enemyIndex++
-        ) {
-          let enemy = this.state.enemies[enemyIndex];
-          if (abstraction.dist(enemy.cords, this.state.player.cords) === 0) {
-            this.gameOver();
-            return;
+        } else if (this.state.implementation === "pointy") {
+          if (event.keyCode === 87) {
+            newCords.z -= 1;
+            newCords.y += 1;
+          } else if (event.keyCode === 69) {
+            newCords.x += 1;
+            newCords.z -= 1;
+          } else if (event.keyCode === 65) {
+            newCords.x -= 1;
+            newCords.y += 1;
+          } else if (event.keyCode === 68) {
+            newCords.x += 1;
+            newCords.y -= 1;
+          } else if (event.keyCode === 90) {
+            newCords.x -= 1;
+            newCords.z += 1;
+          } else if (event.keyCode === 88) {
+            newCords.z += 1;
+            newCords.y -= 1;
           }
         }
         if (
-          abstraction.dist(this.state.player.cords, this.state.finish.cords) ===
-          0
+          newCords.x < this.state.mapsize &&
+          newCords.y < this.state.mapsize &&
+          newCords.z < this.state.mapsize &&
+          newCords.x > -this.state.mapsize &&
+          newCords.y > -this.state.mapsize &&
+          newCords.z > -this.state.mapsize
         ) {
-          this.levelUp();
-          return;
+          this.setState({
+            player: {
+              cords: newCords
+            }
+          });
+          for (
+            let enemyIndex = 0;
+            enemyIndex < this.state.enemies.length;
+            enemyIndex++
+          ) {
+            let enemy = this.state.enemies[enemyIndex];
+            if (abstraction.dist(enemy.cords, this.state.player.cords) === 0) {
+              this.gameOver();
+              return;
+            }
+          }
+          if (
+            abstraction.dist(
+              this.state.player.cords,
+              this.state.finish.cords
+            ) === 0
+          ) {
+            this.levelUp();
+            return;
+          }
         }
       }
     } else if (event.keyCode === 13) {
@@ -224,52 +245,50 @@ class Home extends Component {
     }
   };
 
-  mouseMove = event => {
-    console.log("MOUSE MOVE", event.screenX, event.screenY);
-    let sensitivity = 50;
-    if (event.screenX <= 0) {
-      this.setState({
-        mouseX: this.state.mouseX - sensitivity,
-        xModifier: this.state.xModifier - sensitivity
-      });
-    }
-    if (event.screenY <= 0) {
-      this.setState({
-        mouseY: this.state.mouseY - sensitivity,
-        yModifier: this.state.yModifier - sensitivity
-      });
-    }
-    if (event.screenX >= document.getElementById("root").clientWidth - 5) {
-      this.setState({
-        mouseX: this.state.mouseX + sensitivity,
-        xModifier: this.state.xModifier + sensitivity
-      });
-    }
-    if (event.screenY >= document.getElementById("root").clientHeight - 5) {
-      this.setState({
-        mouseY: this.state.mouseY + sensitivity,
-        yModifier: this.state.yModifier + sensitivity
-      });
-    }
-    if (event.screenX + this.state.xModifier > this.state.mouseX) {
-      this.setState({
-        mouseX: this.state.mouseX + sensitivity
-      });
-    }
-    if (event.screenY + this.state.yModifier > this.state.mouseY) {
-      this.setState({
-        mouseY: this.state.mouseY + sensitivity
-      });
-    }
-    if (event.screenX + this.state.xModifier < this.state.mouseX) {
-      this.setState({
-        mouseX: this.state.mouseX - sensitivity
-      });
-    }
-    if (event.screenY + this.state.yModifier < this.state.mouseY) {
-      this.setState({
-        mouseY: this.state.mouseY - sensitivity
-      });
+  directionMove = () => {
+    console.log("MOVE");
+    let newCords = {
+      x: this.state.player.cords.x + this.state.direction.x,
+      y: this.state.player.cords.y + this.state.direction.y,
+      z: this.state.player.cords.z + this.state.direction.z
+    };
+    if (
+      newCords.x < this.state.mapsize &&
+      newCords.y < this.state.mapsize &&
+      newCords.z < this.state.mapsize &&
+      newCords.x > -this.state.mapsize &&
+      newCords.y > -this.state.mapsize &&
+      newCords.z > -this.state.mapsize
+    ) {
+      this.setState(
+        {
+          player: {
+            cords: newCords
+          }
+        },
+        () => {
+          for (
+            let enemyIndex = 0;
+            enemyIndex < this.state.enemies.length;
+            enemyIndex++
+          ) {
+            let enemy = this.state.enemies[enemyIndex];
+            if (abstraction.dist(enemy.cords, this.state.player.cords) === 0) {
+              this.gameOver();
+              return;
+            }
+          }
+          if (
+            abstraction.dist(
+              this.state.player.cords,
+              this.state.finish.cords
+            ) === 0
+          ) {
+            this.levelUp();
+            return;
+          }
+        }
+      );
     }
   };
 
@@ -326,7 +345,7 @@ class Home extends Component {
 
   render() {
     return this.state.start ? (
-      <div onMouseMove={this.mouseMove}>
+      <div onClick={this.directionMove}>
         <P5Wrapper
           sketch={
             this.state.implementation === "flat"
@@ -335,15 +354,13 @@ class Home extends Component {
               ? sketchPointy
               : sketch3D
           }
-          mapsize={this.state.mapsize}
           map={this.state.map}
           player={this.state.player}
           enemies={this.state.enemies}
           finish={this.state.finish}
           time={this.state.time}
           hexsize={this.state.hexsize}
-          mouseX={this.state.mouseX}
-          mouseY={this.state.mouseY}
+          direction={this.state.direction}
         />
       </div>
     ) : (
