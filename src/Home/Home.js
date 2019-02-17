@@ -45,7 +45,6 @@ class Home extends Component {
   //GAME UPDATE
 
   startGame = () => {
-    console.log("START", this.state.implementation);
     this.setState(
       {
         gameOverBoolean: false,
@@ -248,7 +247,6 @@ class Home extends Component {
   };
 
   directionMove = () => {
-    console.log("MOVE");
     let newCords = {
       x: this.state.player.cords.x + this.state.direction.x,
       y: this.state.player.cords.y + this.state.direction.y,
@@ -295,7 +293,6 @@ class Home extends Component {
   };
 
   zoom = event => {
-    console.log(event.deltaX, event.deltaY, event.deltaZ);
     if (event.deltaY > 0 && this.state.zoom < (Math.PI * 7) / 8) {
       this.setState({ zoom: this.state.zoom + Math.PI / 12 });
     } else if (event.deltaY < 0 && this.state.zoom > 0) {
