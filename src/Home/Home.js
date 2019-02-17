@@ -7,7 +7,8 @@ import ButtonToolbar from "react-bootstrap/ButtonToolbar";
 import P5Wrapper from "react-p5-wrapper";
 import sketchFlat from "../implementations/sketchFlat";
 import sketchPointy from "../implementations/sketchPointy";
-import sketch3D from "../implementations/sketch3D";
+import sketch3D from "../implementations/3D/sketch3D";
+import miniMap from "../implementations/3D/miniMap";
 import * as abstraction from "../abstraction";
 
 class Home extends Component {
@@ -23,7 +24,8 @@ class Home extends Component {
     time: 0,
     gameOverBoolean: false,
     hexsize: 25,
-    direction: { x: 0, y: 0, z: 0 }
+    direction: { x: 0, y: 0, z: 0 },
+    zoom: Math.PI / 3
   };
 
   componentDidUpdate() {
@@ -54,7 +56,7 @@ class Home extends Component {
       },
       () => {
         this.refreshMap();
-        //this.timer();
+        this.timer();
       }
     );
   };
@@ -138,9 +140,9 @@ class Home extends Component {
     if (this.state.start) {
       if (this.state.implementation === "3d") {
         let newDirection = { x: 0, y: 0, z: 0 };
-        if (event.keyCode === 81) {
+        if (event.keyCode === 90) {
           newDirection.x -= 1;
-          newDirection.z += 1;
+          newDirection.y += 1;
         } else if (event.keyCode === 87) {
           newDirection.z += 1;
           newDirection.y -= 1;
@@ -149,8 +151,8 @@ class Home extends Component {
           newDirection.y -= 1;
         } else if (event.keyCode === 65) {
           newDirection.x -= 1;
-          newDirection.y += 1;
-        } else if (event.keyCode === 83) {
+          newDirection.z += 1;
+        } else if (event.keyCode === 88) {
           newDirection.z -= 1;
           newDirection.y += 1;
         } else if (event.keyCode === 68) {
@@ -292,6 +294,15 @@ class Home extends Component {
     }
   };
 
+  zoom = event => {
+    console.log(event.deltaX, event.deltaY, event.deltaZ);
+    if (event.deltaY > 0 && this.state.zoom < (Math.PI * 7) / 8) {
+      this.setState({ zoom: this.state.zoom + Math.PI / 12 });
+    } else if (event.deltaY < 0 && this.state.zoom > 0) {
+      this.setState({ zoom: this.state.zoom - Math.PI / 12 });
+    }
+  };
+
   //TIMER
 
   timer = () => {
@@ -345,23 +356,33 @@ class Home extends Component {
 
   render() {
     return this.state.start ? (
-      <div onClick={this.directionMove}>
-        <P5Wrapper
-          sketch={
-            this.state.implementation === "flat"
-              ? sketchFlat
-              : this.state.implementation === "pointy"
-              ? sketchPointy
-              : sketch3D
-          }
-          map={this.state.map}
-          player={this.state.player}
-          enemies={this.state.enemies}
-          finish={this.state.finish}
-          time={this.state.time}
-          hexsize={this.state.hexsize}
-          direction={this.state.direction}
-        />
+      <div onClick={this.directionMove} onWheel={this.zoom}>
+        {this.state.implementation === "3d" ? (
+          <React.Fragment>
+            <P5Wrapper time={this.state.time} sketch={miniMap} />
+            <P5Wrapper
+              sketch={sketch3D}
+              map={this.state.map}
+              player={this.state.player}
+              enemies={this.state.enemies}
+              finish={this.state.finish}
+              direction={this.state.direction}
+              zoom={this.state.zoom}
+            />
+          </React.Fragment>
+        ) : (
+          <P5Wrapper
+            sketch={
+              this.state.implementation === "flat" ? sketchFlat : sketchPointy
+            }
+            map={this.state.map}
+            player={this.state.player}
+            enemies={this.state.enemies}
+            finish={this.state.finish}
+            time={this.state.time}
+            hexsize={this.state.hexsize}
+          />
+        )}
       </div>
     ) : (
       <div className={classes.Home}>

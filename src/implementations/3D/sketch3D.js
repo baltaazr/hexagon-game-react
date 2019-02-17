@@ -3,20 +3,33 @@ export default function sketch(p) {
   let player = null;
   let enemies = null;
   let finish = null;
-  let time = 0;
   let direction = null;
-  let size = 100;
+  let size = 1000;
   let zModifier = 800;
+  let zoom = Math.PI / 3;
 
   p.setup = function() {
-    p.createCanvas(p.windowWidth, p.windowHeight - 7, p.WEBGL);
+    p.createCanvas(p.windowWidth - 100, p.windowHeight - 115, p.WEBGL);
     p.imageMode(p.CENTER);
     zModifier = p.height / 2 / p.tan(p.PI / 6);
   };
 
-  p.draw = function() {
-    if (player) {
-      //console.log(direction.z + p.height / 2 / p.tan(p.PI / 6));
+  p.draw = function() {};
+
+  p.myCustomRedrawAccordingToNewPropsHandler = function(props) {
+    if (
+      direction !== props.direction ||
+      map !== props.map ||
+      enemies !== props.enemies ||
+      player !== props.player ||
+      zoom !== props.zoom
+    ) {
+      map = props.map;
+      player = props.player;
+      enemies = props.enemies;
+      finish = props.finish;
+      direction = props.direction;
+      zoom = props.zoom;
       p.background(255);
       p.camera(
         0,
@@ -29,34 +42,9 @@ export default function sketch(p) {
         1,
         0
       );
-      drawTime();
+      p.perspective(zoom, p.width / p.height, zModifier / 10, zModifier * 10);
       drawMap();
     }
-    // if(player){
-    // }
-    // p.ambientLight(255);
-    // p.push();
-    // p.rotateX(angle);
-    // p.rotateY(angle * 0.3);
-    // p.rotateZ(angle * 1.2);
-    // p.noStroke();
-    // p.normalMaterial();
-    // p.box(100);
-    // p.pop();
-    // p.translate(0, 100);
-    // p.rotateX(p.HALF_PI);
-    // p.ambientMaterial(100);
-    // p.plane(500, 500);
-    // angle += 0.03;
-  };
-
-  p.myCustomRedrawAccordingToNewPropsHandler = function(props) {
-    map = props.map;
-    player = props.player;
-    enemies = props.enemies;
-    finish = props.finish;
-    time = props.time;
-    direction = props.direction;
   };
 
   let drawMap = () => {
@@ -83,17 +71,6 @@ export default function sketch(p) {
       );
     }
     p.pop();
-  };
-
-  let drawTime = () => {
-    // p.push();
-    // p.fill(255, 0, 0);
-    // p.rect(10, 10, 500, 20);
-    // p.pop();
-    // p.push();
-    // p.fill(0, 255, 0);
-    // p.rect(10, 10, ((100 - time) / 100) * 500, 20);
-    // p.pop();
   };
 
   let drawCube = (x, y, z, color, noFill) => {
