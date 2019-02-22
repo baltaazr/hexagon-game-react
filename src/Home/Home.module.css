@@ -6,3 +6,10 @@
 .Home button {
   padding: 5px;
 }
+
+.lvl {
+  z-index: 100;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+}

@@ -4,6 +4,7 @@ import classes from "./Home.module.css";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import ButtonToolbar from "react-bootstrap/ButtonToolbar";
+import FormCheck from "react-bootstrap/FormCheck";
 import P5Wrapper from "react-p5-wrapper";
 import sketchFlat from "../implementations/sketchFlat";
 import sketchPointy from "../implementations/sketchPointy";
@@ -25,7 +26,9 @@ class Home extends Component {
     gameOverBoolean: false,
     hexsize: 25,
     direction: { x: 0, y: 0, z: 0 },
-    zoom: Math.PI / 3
+    zoom: Math.PI / 3,
+    animation: false,
+    timer: false
   };
 
   componentDidUpdate() {
@@ -42,6 +45,18 @@ class Home extends Component {
     this.setState({ difficulty: parseInt(event.target.value) });
   };
 
+  animationBoxHandler = () => {
+    this.setState({ animation: !this.state.animation }, () => {
+      console.log(this.state.animation);
+    });
+  };
+
+  timerBoxHandler = () => {
+    this.setState({ timer: !this.state.timer }, () => {
+      console.log(this.state.timer);
+    });
+  };
+
   //GAME UPDATE
 
   startGame = () => {
@@ -55,7 +70,9 @@ class Home extends Component {
       },
       () => {
         this.refreshMap();
-        this.timer();
+        if (this.state.timer) {
+          this.timer();
+        }
       }
     );
   };
@@ -137,16 +154,26 @@ class Home extends Component {
 
   move = event => {
     if (this.state.start) {
+      if (event.keyCode === 67) {
+        if (this.state.implementation === "3d") {
+          this.setState({ implementation: "flat" });
+        } else if (this.state.implementation === "flat") {
+          this.setState({ implementation: "pointy" });
+        } else if (this.state.implementation === "pointy") {
+          this.setState({ implementation: "3d" });
+        }
+        return;
+      }
       if (this.state.implementation === "3d") {
         let newDirection = { x: 0, y: 0, z: 0 };
         if (event.keyCode === 90) {
           newDirection.x -= 1;
           newDirection.y += 1;
         } else if (event.keyCode === 87) {
-          newDirection.z += 1;
+          newDirection.x += 1;
           newDirection.y -= 1;
         } else if (event.keyCode === 69) {
-          newDirection.x += 1;
+          newDirection.z += 1;
           newDirection.y -= 1;
         } else if (event.keyCode === 65) {
           newDirection.x -= 1;
@@ -353,34 +380,38 @@ class Home extends Component {
 
   render() {
     return this.state.start ? (
-      <div onClick={this.directionMove} onWheel={this.zoom}>
-        {this.state.implementation === "3d" ? (
-          <React.Fragment>
-            <P5Wrapper time={this.state.time} sketch={miniMap} />
+      <React.Fragment>
+        <h1 className={classes.lvl}>Level: {this.state.mapsize - 1}</h1>
+        <div onClick={this.directionMove} onWheel={this.zoom}>
+          {this.state.implementation === "3d" ? (
+            <React.Fragment>
+              <P5Wrapper time={this.state.time} sketch={miniMap} />
+              <P5Wrapper
+                sketch={sketch3D}
+                map={this.state.map}
+                player={this.state.player}
+                enemies={this.state.enemies}
+                finish={this.state.finish}
+                direction={this.state.direction}
+                zoom={this.state.zoom}
+                animation={this.state.animation}
+              />
+            </React.Fragment>
+          ) : (
             <P5Wrapper
-              sketch={sketch3D}
+              sketch={
+                this.state.implementation === "flat" ? sketchFlat : sketchPointy
+              }
               map={this.state.map}
               player={this.state.player}
               enemies={this.state.enemies}
               finish={this.state.finish}
-              direction={this.state.direction}
-              zoom={this.state.zoom}
+              time={this.state.time}
+              hexsize={this.state.hexsize}
             />
-          </React.Fragment>
-        ) : (
-          <P5Wrapper
-            sketch={
-              this.state.implementation === "flat" ? sketchFlat : sketchPointy
-            }
-            map={this.state.map}
-            player={this.state.player}
-            enemies={this.state.enemies}
-            finish={this.state.finish}
-            time={this.state.time}
-            hexsize={this.state.hexsize}
-          />
-        )}
-      </div>
+          )}
+        </div>
+      </React.Fragment>
     ) : (
       <div className={classes.Home}>
         <ButtonToolbar>
@@ -411,6 +442,14 @@ class Home extends Component {
             </Dropdown.Menu>
           </Dropdown>
         </ButtonToolbar>
+        <React.Fragment>
+          Timer <FormCheck onClick={this.timerBoxHandler} />
+        </React.Fragment>
+        {this.state.implementation === "3d" ? (
+          <React.Fragment>
+            Animation <FormCheck onClick={this.animationBoxHandler} />
+          </React.Fragment>
+        ) : null}
         <label>Difficulty</label>
         <input
           type="range"
